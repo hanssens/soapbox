@@ -10,6 +10,13 @@ namespace Soapbox
 
 	public class DynamicServiceAdapter
 	{
+		/// <summary>
+		/// Extracts webservice information, such as webmethods, inputs/outputs etc.
+		/// </summary>
+		/// <param name="webserviceUrl">The full url of the webservice</param>
+		/// <remarks>
+		/// Heavily inspired on pmartin's snippet through http://stackoverflow.com/a/4504351
+		/// </remarks>
 		public static WebserviceDefinition Extract(string webserviceUrl)
 		{
 			var returnValue = new WebserviceDefinition ();
@@ -72,8 +79,11 @@ namespace Soapbox
 
 			//Drill down into the WSDL's complex types to list out the individual schema elements 
 			//and their data types
+			// TODO: This requires some more work...
 			Types types = serviceDescription.Types;
 			XmlSchema xmlSchema = types.Schemas[0];
+
+			// TODO: if types.Schemas[0] is null, there's probably something wrong with the endpoint
 
 			foreach (object item in xmlSchema.Items)
 			{
@@ -96,15 +106,16 @@ namespace Soapbox
 						{
 							foreach (XmlSchemaElement childElement in sequence.Items)
 							{
-								Console.Out.WriteLine("    Element/Type: {0}:{1}", childElement.Name,
-									childElement.SchemaTypeName.Name);
+								Console.Out.WriteLine("    Element/Type: {0}:{1}", 
+									childElement.Name, //{0}: property name, for example 'ZipCode'
+									childElement.SchemaTypeName.Name); //{1}: property type, for example 'string'
 							}
 						}
 					}
 				}
 				else if (complexType != null)
 				{
-					Console.Out.WriteLine("Complex Type: {0}", complexType.Name);
+					Console.Out.WriteLine("Complex Type: {0}", complexType.Name); // complex types, such as arrays/objects
 					OutputElements(complexType.Particle);
 				}
 				Console.Out.WriteLine();
